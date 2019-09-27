@@ -1,0 +1,51 @@
+<resources>
+    <string name="app_name">EasyPOS</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="cart_title">0</string>
+    <string name="app_bar_search">Search</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">General</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="order_number_format">Order Number Format</string>
+    <string name="order_running_number">Running Number</string>
+    <string name="server_address">Server IP / Address</string>
+    <string name="company_name">Company Name</string>
+    <string name="company_name_default">EasyPOS Pvt. Ltd</string>
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
+    <string name="drawer_item_home">home</string>
+    <string name="drawer_item_settings">Settings</string>
+    <string name="drawer_item_order_detail">Order Detail</string>
+    <string name="drawer_item_synchronize">Synchronize</string>
+
+    <string name="agree">OK</string>
+    <string name="disagree">Cancel</string>
+    <string name="yes">Yes</string>
+    <string name="print_dialog_title">Hey there!</string>
+    <string name="print_dialog_message">Do you want to print this order?</string>
+    <string name="delete_dialog_title">Hey there!</string>
+    <string name="delete_dialog_message">Do you want to remove this order line?</string>
+    <string name="error_dialog_title">Hey There!</string>
+    <string name="error_dialog_message">There was a error. Please try again</string>
+    <string name="order_conformed_delete_message">Sorry! you can\'t delete a order line that is already closed.</string>
+    <string name="order_conformed_edit_message">Sorry! you can\'t edit a order line that is already closed.</string>
+    <string name="num_seq_format_empty_title">Hey there! </string>
+    <string name="num_seq_format_empty_msg">Please setup number sequence format before you can create any order</string>
+    <string name="server_empty_title">Hey there! </string>
+    <string name="server_empty_msg">Please setup Server Address before u can synchronize data</string>
+
+    <string name="back_press_title">Quit!</string>
+    <string name="back_press_message">Do you want to exit from app?</string>
+
+</resources>
