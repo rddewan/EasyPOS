@@ -18,14 +18,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <Preference
-        app:fragment="com.richarddewan.myapplication.setting.SettingsActivity$MessagesFragment"
+        app:fragment="com.richarddewan.easypos.setting.SettingsActivity$MessagesFragment"
         app:icon="@drawable/ic_settings_outline_grey600_24dp"
         app:key="messages_header"
 
         app:title="@string/messages_header" />
 
     <Preference
-        app:fragment="com.richarddewan.myapplication.setting.SettingsActivity$SyncFragment"
+        app:fragment="com.richarddewan.easypos.setting.SettingsActivity$SyncFragment"
         app:icon="@drawable/ic_sync_grey600_24dp"
         app:key="sync_header"
         app:title="@string/sync_header" />

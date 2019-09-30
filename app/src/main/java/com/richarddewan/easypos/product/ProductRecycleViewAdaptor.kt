@@ -1,5 +1,6 @@
 package com.richarddewan.easypos.product
 
+import android.content.SharedPreferences
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
@@ -7,10 +8,14 @@ import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.mikepenz.iconics.Iconics.applicationContext
 import com.richarddewan.easypos.R
 import com.richarddewan.easypos.product.interfaces.ProductClickListener
 import com.richarddewan.easypos.utils.AnimationUtils
+import com.squareup.picasso.Picasso
 
 
 class ProductRecycleViewAdaptor(private var mDataList:ArrayList<ProductProperty>) : RecyclerView.Adapter<ProductRecycleViewAdaptor.ViewHolder>() {
@@ -18,8 +23,6 @@ class ProductRecycleViewAdaptor(private var mDataList:ArrayList<ProductProperty>
     var view:View? = null
     private var mPreviousPosition = 0
     private val FADE_DURATION = 1000 //FADE_DURATION in milliseconds
-
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         view = LayoutInflater.from(parent.context).inflate(R.layout.custom_product_detail_view,parent,false)
@@ -35,6 +38,20 @@ class ProductRecycleViewAdaptor(private var mDataList:ArrayList<ProductProperty>
         holder.item_id?.text = mDataList.get(position).item_id
         holder.item_name?.text = mDataList.get(position).item_name
         holder.barcode?.text = mDataList.get(position).barcode
+        //load image from url to image view
+        Glide
+            .with(applicationContext)
+            .load(mDataList.get(position).image)
+            .centerCrop()
+            .placeholder(R.drawable.ic_shopify_grey600_36dp)
+            .into(holder.productImage!!)
+
+        /*Picasso.get().load(mDataList.get(position).image)
+            .resize(56, 56)
+            .centerCrop()
+            .into(holder.productImage)*/
+
+
         holder.setProductClickListener(productClickListener!!)
 
         holder.btnCart?.setOnClickListener {
@@ -81,6 +98,7 @@ class ProductRecycleViewAdaptor(private var mDataList:ArrayList<ProductProperty>
         var item_name:TextView? = null
         var barcode:TextView? = null
         var btnCart:ImageView? = null
+        var productImage:ImageView? = null
         private var productClickListener:ProductClickListener? = null
 
 
@@ -90,6 +108,7 @@ class ProductRecycleViewAdaptor(private var mDataList:ArrayList<ProductProperty>
             item_name = view.findViewById(R.id.txtItemName)
             barcode = view.findViewById(R.id.txtBarcode)
             btnCart = view.findViewById(R.id.btnCart)
+            productImage = view.findViewById(R.id.productImage)
 
             view.setOnClickListener(this)
             view.setOnLongClickListener(this)

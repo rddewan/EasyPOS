@@ -25,10 +25,10 @@ class OrderHeaderRecycleViewHeader(var mDataList: ArrayList<OrderHeaderProperty>
         holder.orderId?.text = mDataList.get(position).orderId
         holder.order_status?.text = mDataList.get(position).order_status
         if (mDataList.get(position).order_status.equals("CLOSED")){
-            holder.order_status?.setTextColor(mContext.resources.getColor(R.color.red))
+            holder.order_status?.setTextColor(mContext.resources.getColor(R.color.smashed_pumpkin))
         }
         else {
-            holder.order_status?.setTextColor(mContext.resources.getColor(R.color.primaryColor))
+            holder.order_status?.setTextColor(mContext.resources.getColor(R.color.bondi_blue))
         }
 
         holder.onClickListener(orderHeaderClickListener!!)

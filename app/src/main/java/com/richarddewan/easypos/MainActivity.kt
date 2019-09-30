@@ -29,7 +29,7 @@ import com.mikepenz.materialdrawer.model.SecondaryDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IProfile
 import com.richarddewan.easypos.database.DbHelper
-import com.richarddewan.easypos.download.SyncDataToServer
+import com.richarddewan.easypos.download.SyncDataFromServer
 import com.richarddewan.easypos.order.CartRecycleViewAdaptor
 import com.richarddewan.easypos.order.OrderProperty
 import com.richarddewan.easypos.order.header.OrderHeaderDetail
@@ -157,13 +157,13 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     }
 
     fun productRecycleView() {
-        /*for (i in 1..100){
-            var data = ProductProperty("test$i","test$i","test_name$i","01234566$i")
+        for (i in 1..100){
+            val data = ProductProperty("test$i","test$i","test_name$i","01234566$i","http://$i.jpg")
             dbHelper = DbHelper(applicationContext)
-            dbHelper!!.insertProductDetail(data.product_id!!,data.item_id!!,data.item_name!!,data.barcode!!)
+            dbHelper!!.insertProductDetail(data.product_id!!,data.item_id!!,data.item_name!!,data.barcode!!,data.image!!)
             dbHelper!!.close()
 
-        }*/
+        }
         //get the list of product from database
         dbHelper = DbHelper(applicationContext)
         mList = dbHelper!!.getProductDetail()
@@ -213,7 +213,6 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
             .withTextColor(resources.getColor(R.color.white))
             .addProfiles(
                 ProfileDrawerItem().withName(COMPANY_ID).
-                    // withTextColor(resources.getColor(R.color.white)).
                     withIcon(resources.getDrawable(R.drawable.ic_user, null))
             )
             .withSelectionListEnabledForSingleProfile(false)
@@ -278,7 +277,7 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
                             intent = Intent(applicationContext, SettingsActivity::class.java)
                         }
                         drawerItem.identifier == 4L -> {
-                            intent = Intent(applicationContext, SyncDataToServer::class.java)
+                            intent = Intent(applicationContext, SyncDataFromServer::class.java)
                         }
                     }
 
@@ -716,8 +715,6 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        val id = item.itemId
-
 
         return super.onOptionsItemSelected(item)
     }

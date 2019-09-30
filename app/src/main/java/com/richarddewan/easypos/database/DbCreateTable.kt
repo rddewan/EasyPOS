@@ -11,7 +11,8 @@ class DbCreateTable {
                 DbContract.ProductDetail.key_product_id + " TEXT," +
                 DbContract.ProductDetail.key_item_id + " TEXT," +
                 DbContract.ProductDetail.key_item_name + " TEXT," +
-                DbContract.ProductDetail.key_barcode + " TEXT)"
+                DbContract.ProductDetail.key_barcode + " TEXT," +
+                DbContract.ProductDetail.key_image + " TEXT)"
 
         const val ORDER_DETAIL_QUERY = "CREATE TABLE IF NOT EXISTS " + DbContract.OrderDetail.TABLE_NAME +
                 "(" +
@@ -23,6 +24,7 @@ class DbCreateTable {
                 DbContract.OrderDetail.key_item_name + " TEXT," +
                 DbContract.OrderDetail.key_barcode + " TEXT," +
                 DbContract.OrderDetail.key_qty + " TEXT," +
+                DbContract.OrderDetail.key_image + " TEXT," +
                 DbContract.OrderDetail.key_order_status + " TEXT)"
 
     }

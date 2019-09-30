@@ -58,7 +58,7 @@ class DbHelper : SQLiteOpenHelper {
             db.close()
             Log.e(TAG, "new row added to : ${DbContract.OrderDetail.TABLE_NAME}")
         } catch (er: SQLException) {
-            Log.e(TAG, er.message)
+            Log.e(TAG, er.message.toString())
         }
 
     }
@@ -82,7 +82,7 @@ class DbHelper : SQLiteOpenHelper {
             Log.e(TAG, "record updated : ${DbContract.OrderDetail.TABLE_NAME}")
 
         } catch (er: Exception) {
-            Log.e(TAG, er.message)
+            Log.e(TAG, er.message.toString())
         }
 
     }
@@ -103,7 +103,7 @@ class DbHelper : SQLiteOpenHelper {
             status = true
 
         } catch (er: SQLException) {
-            Log.e(TAG, er.message)
+            Log.e(TAG, er.message.toString())
         }
         return status
     }
@@ -122,7 +122,7 @@ class DbHelper : SQLiteOpenHelper {
                 "record deleted OrderNumber: $order_id LineNumber: $line_id from ${DbContract.OrderDetail.TABLE_NAME}"
             )
         } catch (er: SQLException) {
-            Log.e(TAG, er.message)
+            Log.e(TAG, er.message.toString())
         }
     }
 
@@ -130,7 +130,8 @@ class DbHelper : SQLiteOpenHelper {
         product_id: String,
         item_id: String,
         item_name: String,
-        barcode: String
+        barcode: String,
+        image: String
     ) {
         try {
             val db = this.writableDatabase
@@ -139,13 +140,14 @@ class DbHelper : SQLiteOpenHelper {
             contentValues.put(DbContract.ProductDetail.key_item_id, item_id)
             contentValues.put(DbContract.ProductDetail.key_item_name, item_name)
             contentValues.put(DbContract.ProductDetail.key_barcode, barcode)
+            contentValues.put(DbContract.ProductDetail.key_image, image)
 
             db.insert(DbContract.ProductDetail.TABLE_NAME, null, contentValues)
             db.close()
             Log.e(TAG, "new record inserted to : ${DbContract.ProductDetail.TABLE_NAME}")
 
         } catch (er: SQLException) {
-            Log.e(TAG, er.message)
+            Log.e(TAG, er.message.toString())
         }
 
     }
@@ -157,7 +159,8 @@ class DbHelper : SQLiteOpenHelper {
         val mList = ArrayList<ProductProperty>()
         try {
             val db = this.readableDatabase
-            val query: String = "SELECT * FROM " + DbContract.ProductDetail.TABLE_NAME
+            val query: String = "SELECT * FROM " + DbContract.ProductDetail.TABLE_NAME +
+                    " ORDER BY " + DbContract.ProductDetail.key_item_name + " ASC"
             val cursor: Cursor = db.rawQuery(query, null)
             if (cursor.count > 0) {
                 cursor.moveToFirst()
@@ -166,7 +169,8 @@ class DbHelper : SQLiteOpenHelper {
                         cursor.getString(cursor.getColumnIndex(DbContract.ProductDetail.key_product_id)),
                         cursor.getString(cursor.getColumnIndex(DbContract.ProductDetail.key_item_id)),
                         cursor.getString(cursor.getColumnIndex(DbContract.ProductDetail.key_item_name)),
-                        cursor.getString(cursor.getColumnIndex(DbContract.ProductDetail.key_barcode))
+                        cursor.getString(cursor.getColumnIndex(DbContract.ProductDetail.key_barcode)),
+                        cursor.getString(cursor.getColumnIndex(DbContract.ProductDetail.key_image))
                     )
                     mList.add(data)
 
@@ -177,7 +181,7 @@ class DbHelper : SQLiteOpenHelper {
             db.close()
 
         } catch (er: SQLException) {
-            Log.e(TAG, er.message)
+            Log.e(TAG, er.message.toString())
         }
         return mList
     }
@@ -214,7 +218,7 @@ class DbHelper : SQLiteOpenHelper {
             db.close()
 
         } catch (er: SQLException) {
-            Log.e(TAG, er.message)
+            Log.e(TAG, er.message.toString())
         }
         return mList
     }
@@ -250,7 +254,7 @@ class DbHelper : SQLiteOpenHelper {
             db.close()
         }
         catch (er:SQLException){
-            Log.e(TAG,er.message)
+            Log.e(TAG,er.message.toString())
         }
 
         return mList
@@ -292,7 +296,7 @@ class DbHelper : SQLiteOpenHelper {
 
         }
         catch (er:SQLException){
-            Log.e(TAG,er.message)
+            Log.e(TAG,er.message.toString())
         }
 
 

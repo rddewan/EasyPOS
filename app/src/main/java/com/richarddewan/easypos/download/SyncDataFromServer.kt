@@ -19,14 +19,14 @@ import com.richarddewan.easypos.database.DbContract
 import com.richarddewan.easypos.database.DbCreateTable
 import com.richarddewan.easypos.database.DbHelper
 import com.richarddewan.easypos.setting.SettingsActivity
-import kotlinx.android.synthetic.main.activity_sync_data_to_server.*
+import kotlinx.android.synthetic.main.activity_sync_data_from_server.*
 import java.io.*
 import java.lang.Exception
 import java.net.HttpURLConnection
 import java.net.URL
 
-class SyncDataToServer : AppCompatActivity() {
-    private val TAG = "SyncDataToServer"
+class SyncDataFromServer : AppCompatActivity() {
+    private val TAG = "SyncDataFromServer"
     private val IMPORT_DIRECTORY = "/EasyPOS/Import/"
     private var connection: HttpURLConnection? = null
     private var STATUS_CODE: Int = 0
@@ -36,6 +36,7 @@ class SyncDataToServer : AppCompatActivity() {
     private var counter = 0
     private var getData = 0
     private var product_file_url: String? = null
+    private var IMAGE_URL: String? = null
     private var webURL: String? = null
     private  var sharedPreferences:SharedPreferences? = null
     private var dbHelper:DbHelper? = null
@@ -79,7 +80,7 @@ class SyncDataToServer : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_sync_data_to_server)
+        setContentView(R.layout.activity_sync_data_from_server)
 
 
         progressBar = findViewById(R.id.progressBar)
@@ -98,6 +99,7 @@ class SyncDataToServer : AppCompatActivity() {
         }
         //url
         product_file_url = webURL + "download/$csvProduct"
+        IMAGE_URL = webURL + "download/ProductImages/"
     }
 
     fun openSettingPrefActivity() {
@@ -275,9 +277,10 @@ class SyncDataToServer : AppCompatActivity() {
                         val item_id = nextLine?.get(1)
                         val item_name = nextLine?.get(2)
                         val barcode = nextLine?.get(3)
+                        val image = IMAGE_URL + nextLine?.get(1) + ".jpg"
 
                         dbHelper = DbHelper(applicationContext)
-                        dbHelper?.insertProductDetail(product_id!!,item_id!!,item_name!!,barcode!!)
+                        dbHelper?.insertProductDetail(product_id!!,item_id!!,item_name!!,barcode!!,image)
 
                     }
                     dbHelper!!.close()

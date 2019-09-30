@@ -11,6 +11,7 @@ class DbContract {
             const val key_item_id = "item_id"
             const val key_item_name = "item_name"
             const val key_barcode = "barcode"
+            const val key_image = "image"
 
             const val TABLE_NAME = "products"
         }
@@ -26,6 +27,7 @@ class DbContract {
             const val key_item_name = "item_name"
             const val key_qty = "qty"
             const val key_barcode = "barcode"
+            const val key_image = "image"
             const val key_order_status = "order_status"
 
             const val TABLE_NAME = "order_detail"

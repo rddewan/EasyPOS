@@ -28,15 +28,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                app:layout_constraintGuide_begin="114dp" />
+                app:layout_constraintGuide_begin="164dp" />
 
             <TextView
                 android:id="@+id/lbOrderId"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:fontFamily="serif-monospace"
                 android:text="Order Id : "
-                android:textSize="16sp"
+                android:textColor="@color/smashed_pumpkin"
+                android:textSize="18sp"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toStartOf="@+id/txtOrderId"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -46,8 +49,11 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:fontFamily="serif-monospace"
                 android:text="Order Status : "
-                android:textSize="16sp"
+                android:textColor="@color/smashed_pumpkin"
+                android:textSize="18sp"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toStartOf="@+id/guideline"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/txtOrderId" />
@@ -58,6 +64,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
+                android:fontFamily="sans-serif"
+                android:textColor="@color/school_bus_dark"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@+id/guideline"
@@ -71,6 +79,8 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
+                android:fontFamily="sans-serif"
+                android:textColor="@color/school_bus_dark"
                 android:textSize="16sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

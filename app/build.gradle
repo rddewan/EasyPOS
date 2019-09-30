@@ -52,4 +52,11 @@ dependencies {
     implementation 'com.opencsv:opencsv:4.6'
     //https://github.com/Karumi/Dexter
     implementation 'com.karumi:dexter:6.0.0'
+    //https://github.com/hdodenhof/CircleImageView
+    implementation 'de.hdodenhof:circleimageview:3.0.1'
+    //https://github.com/square/picasso
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    //https://github.com/bumptech/glide
+    implementation 'com.github.bumptech.glide:glide:4.10.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
 }
