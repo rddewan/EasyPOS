@@ -4,7 +4,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AlertDialog
@@ -44,11 +43,11 @@ import kotlinx.android.synthetic.main.custom_dialog_qty.view.lbItemName
 import com.karumi.dexter.PermissionToken
 import android.Manifest.permission
 import android.annotation.SuppressLint
+import android.app.Dialog
+import android.app.ProgressDialog
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
-import android.os.Environment
-import android.os.Handler
+import android.os.*
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
@@ -61,6 +60,7 @@ import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.listener.*
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import java.io.File
+import com.example.tscdll.TscWifiActivity
 
 
 class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickListener {
@@ -89,11 +89,15 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     private var ORDER_STATUS_OPEN = "OPEN"
     private var ORDER_STATUS_CLOSED = "CLOSED"
     private var LINE_NUMBER: Int = 0
-    private var CART_COUNT:String? = null
+    private var CART_COUNT: String? = null
     private var sharedPreferences: SharedPreferences? = null
     private val PERMISSION_CODE = 1234560
     private val APP_DIRECTORY = "/EasyPOS"
     private val IMPORT_DIRECTORY = "/EasyPOS/Import"
+    private var dialog: MaterialDialog? = null
+    private var print_server_ip:String? = null
+    private val TscEthernetDll: TscWifiActivity = TscWifiActivity()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -119,10 +123,12 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
 
     }
 
+
     fun getSharedPref() {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
         ORDER_FORMAT = sharedPreferences?.getString("order_number_format", "")
-        COMPANY_ID = sharedPreferences?.getString("company_name","")
+        COMPANY_ID = sharedPreferences?.getString("company_name", "")
+        print_server_ip = sharedPreferences?.getString("print_server_address", "")
         if (ORDER_FORMAT.equals("")) {
             openSettingPrefActivity()
         } else {
@@ -157,13 +163,15 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     }
 
     fun productRecycleView() {
-        for (i in 1..100){
+        //disable it after 1st run
+        /*for (i in 1..100){
             val data = ProductProperty("test$i","test$i","test_name$i","01234566$i","http://$i.jpg")
             dbHelper = DbHelper(applicationContext)
             dbHelper!!.insertProductDetail(data.product_id!!,data.item_id!!,data.item_name!!,data.barcode!!,data.image!!)
             dbHelper!!.close()
 
         }
+         */
         //get the list of product from database
         dbHelper = DbHelper(applicationContext)
         mList = dbHelper!!.getProductDetail()
@@ -202,7 +210,6 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         mAdaptorCart?.setCartItemClickListener(this)
 
 
-
     }
 
     fun drawer(savedInstanceState: Bundle?) {
@@ -212,8 +219,12 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
             .withHeaderBackground(R.color.primaryColor)
             .withTextColor(resources.getColor(R.color.white))
             .addProfiles(
-                ProfileDrawerItem().withName(COMPANY_ID).
-                    withIcon(resources.getDrawable(R.drawable.ic_user, null))
+                ProfileDrawerItem().withName(COMPANY_ID).withIcon(
+                    resources.getDrawable(
+                        R.drawable.ic_user,
+                        null
+                    )
+                )
             )
             .withSelectionListEnabledForSingleProfile(false)
             .withOnAccountHeaderListener(object : AccountHeader.OnAccountHeaderListener {
@@ -242,7 +253,7 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         val item4 =
             SecondaryDrawerItem().withIdentifier(4).withName(R.string.drawer_item_synchronize)
                 .withIcon(
-                   R.drawable.ic_sync_grey600_36dp
+                    R.drawable.ic_sync_grey600_36dp
                 )
 
         //create the drawer and remember the `Drawer` result object
@@ -417,15 +428,14 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         mAdaptor?.setProductClickListener(this)
     }
 
-    fun getCartCountFromDb(){
+    fun getCartCountFromDb() {
         try {
             dbHelper = DbHelper(applicationContext)
             CART_COUNT = dbHelper?.getCartCount(ORDER_ID!!)
             cartCount?.setText(CART_COUNT)
             dbHelper?.close()
-        }
-        catch (er:Exception){
-            Log.e(TAG,er.message.toString())
+        } catch (er: Exception) {
+            Log.e(TAG, er.message.toString())
         }
     }
 
@@ -449,10 +459,9 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
                 cancelable(false)
                 cornerRadius(16f)
                 positiveButton(R.string.yes) {
-
-                    //update order status
-                    updateOrderStatus()
-
+                    dismiss()
+                    //print to printer
+                    PrintNetwork().execute()
                 }
                 negativeButton(R.string.disagree) {
                     dismiss()
@@ -466,6 +475,86 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
                 dialogInterface.dismiss()
             }
             alertDialog.show()
+        }
+
+    }
+
+
+    private inner class PrintNetwork : AsyncTask<Void, String, String>() {
+        var status = ""
+        override fun onPreExecute() {
+            super.onPreExecute()
+            showPrintDialog()
+        }
+
+        override fun doInBackground(vararg p0: Void?): String {
+            for (i in 0..mListCart.size - 1) {
+                try {
+                    val data = mListCart.get(i)
+                    val order_id = data.order_id
+                    val barcode = data.barcode
+                    val item_name = data.item_name
+                    val qty = data.qty
+                    val line_number = data.line_number
+
+                    TscEthernetDll.openport(print_server_ip, 9100, 0)
+                    TscEthernetDll.setup(80,40,10,10,0,0,0)
+                    //String status = TscEthernetDll.printerstatus(300);
+                    TscEthernetDll.clearbuffer();
+                    //TscEthernetDll.sendcommand("SIZE 90 mm, 40 mm\r\n");
+                    //TscEthernetDll.sendcommand("GAP 2 mm, 0 mm\r\n");//Gap media
+                    //TscEthernetDll.sendcommand("BLINE 2 mm, 0 mm\r\n");//blackmark media
+                    //TscEthernetDll.sendcommand("SPEED 4\r\n")
+                    //TscEthernetDll.sendcommand("DENSITY 12\r\n")
+                    //TscEthernetDll.sendcommand("CODEPAGE UTF-8\r\n")
+                    //TscEthernetDll.sendcommand("SET TEAR ON\r\n")
+                    //TscEthernetDll.sendcommand("SET COUNTER @1 1\r\n")
+                    //TscEthernetDll.sendcommand("@1 = \"0001\"\r\n")
+                    //TscEthernetDll.sendcommand("TEXT 100,300,\"ROMAN.TTF\",0,12,12,@1\r\n")
+                    //TscEthernetDll.sendcommand("TEXT 100,400,\"ROMAN.TTF\",0,12,12,\"TEST FONT\"\r\n")
+                    TscEthernetDll.printerfont(100, 100, "3", 0, 1, 1, "OrderId:$order_id  Line:$line_number")
+                    TscEthernetDll.printerfont(100, 130, "3", 0, 1, 1, "$item_name")
+                    TscEthernetDll.printerfont(100, 160, "3", 0, 1, 1, "Qty :  $qty")
+                    TscEthernetDll.barcode(100, 190, "128", 100, 1, 0, 3, 3, barcode)
+                    TscEthernetDll.printlabel(1, 1)
+                    TscEthernetDll.closeport(1000)//5sec
+
+                } catch (er: Exception) {
+                    Log.e(TAG, er.message.toString())
+                }
+                //set status to success
+                status = "SUCCESS"
+
+            }
+
+            return status
+        }
+
+        override fun onPostExecute(result: String?) {
+            //super.onPostExecute(result)
+            //update order status
+            if (result == "SUCCESS") {
+                showPrintDialog()
+                updateOrderStatus()
+
+            }
+
+        }
+    }
+
+    fun showPrintDialog() {
+        if (dialog == null) {
+            dialog = MaterialDialog(this)
+                .customView(R.layout.progress)
+            dialog!!.cancelable(false)
+            dialog!!.show()
+
+        } else {
+            if (dialog!!.isShowing) {
+                dialog!!.dismiss()
+                dialog = null
+            }
+
         }
 
     }

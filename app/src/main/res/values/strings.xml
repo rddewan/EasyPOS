@@ -12,6 +12,7 @@
     <string name="order_number_format">Order Number Format</string>
     <string name="order_running_number">Running Number</string>
     <string name="server_address">Server IP / Address</string>
+    <string name="print_server_address">Print Server IP </string>
     <string name="company_name">Company Name</string>
     <string name="company_name_default">EasyPOS Pvt. Ltd</string>
     <string name="signature_title">Your signature</string>
@@ -47,5 +48,6 @@
 
     <string name="back_press_title">Quit!</string>
     <string name="back_press_message">Do you want to exit from app?</string>
+    <string name="progress_print">Please wait &#8230;</string>
 
 </resources>

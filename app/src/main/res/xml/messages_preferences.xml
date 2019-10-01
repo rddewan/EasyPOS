@@ -37,6 +37,12 @@
 
     <EditTextPreference
         android:icon="@drawable/ic_clipboard_check_grey600_24dp"
+        app:key="print_server_address"
+        app:title="@string/print_server_address"
+        app:useSimpleSummaryProvider="true" />
+
+    <EditTextPreference
+        android:icon="@drawable/ic_clipboard_check_grey600_24dp"
         app:defaultValue="@string/company_name_default"
         app:key="company_name"
         app:title="@string/company_name"

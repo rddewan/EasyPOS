@@ -268,7 +268,7 @@ class SyncDataFromServer : AppCompatActivity() {
                         //send msg
                         val message = Message()
                         message.what = 101
-                        val data = "Importing Customer..Please Wait"
+                        val data = "Importing Product..Please Wait"
                         message.obj = data
                         handler.sendMessage(message)
 
@@ -309,7 +309,7 @@ class SyncDataFromServer : AppCompatActivity() {
             if (result.equals("SUCCESS")){
                 val message3 = Message()
                 message3.what = 1
-                val data = "Importing Customer Successful"
+                val data = "Importing Product Successful"
                 message3.arg1 = 1
                 message3.obj = data
                 handler.sendMessage(message3)

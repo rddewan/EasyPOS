@@ -36,6 +36,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
             android:background="#0192c4"
+            android:onClick="print"
             android:text="Print"
             android:textColor="#FFFFFF"
             app:layout_constraintBottom_toBottomOf="parent"
