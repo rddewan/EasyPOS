@@ -11,14 +11,17 @@ import androidx.appcompat.app.AppCompatActivity
 import android.view.Gravity
 import android.view.View
 import android.widget.ProgressBar
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.opencsv.CSVReader
 import com.richarddewan.easypos.R
-import com.richarddewan.easypos.database.DbContract
-import com.richarddewan.easypos.database.DbCreateTable
-import com.richarddewan.easypos.database.DbHelper
+
+import com.richarddewan.easypos.model.entity.ProductEntity
+import com.richarddewan.easypos.repository.ProductRepository
 import com.richarddewan.easypos.setting.SettingsActivity
+import com.richarddewan.easypos.viewmodel.SyncDataFromServerViewModel
 import kotlinx.android.synthetic.main.activity_sync_data_from_server.*
 import java.io.*
 import java.lang.Exception
@@ -39,9 +42,8 @@ class SyncDataFromServer : AppCompatActivity() {
     private var IMAGE_URL: String? = null
     private var webURL: String? = null
     private  var sharedPreferences:SharedPreferences? = null
-    private var dbHelper:DbHelper? = null
-    private var db:SQLiteDatabase? = null
     var nextLine: Array<String>? = null
+    private var syncDataFromServerViewModel: SyncDataFromServerViewModel? = null
 
      var handler = Handler(Handler.Callback { msg ->
         when (msg.what) {
@@ -82,8 +84,10 @@ class SyncDataFromServer : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sync_data_from_server)
 
-
         progressBar = findViewById(R.id.progressBar)
+        //
+        syncDataFromServerViewModel = ViewModelProviders.of(this).get(SyncDataFromServerViewModel::class.java)
+
         //
         getSharedPref()
 
@@ -251,12 +255,13 @@ class SyncDataFromServer : AppCompatActivity() {
                 val reader = CSVReader(fileReader)
 
                 try {
-                    dbHelper = DbHelper(applicationContext)
+                    syncDataFromServerViewModel?.deleteProductTable()
+                    /*dbHelper = DbHelper(applicationContext)
                     db = dbHelper?.getReadableDatabase()
                     db?.execSQL("DROP TABLE IF EXISTS " + DbContract.ProductDetail.TABLE_NAME)
                     Log.e(TAG, "Table Dropped ${DbContract.ProductDetail.TABLE_NAME}")
                     db?.execSQL(DbCreateTable.PRODUCT_DETAIL_QUERY)
-                    Log.e(TAG, "Table Created ${DbContract.ProductDetail.TABLE_NAME}")
+                    Log.e(TAG, "Table Created ${DbContract.ProductDetail.TABLE_NAME}")*/
 
                 } catch (er: Exception) {
                     Log.e(TAG, er.message)
@@ -279,21 +284,24 @@ class SyncDataFromServer : AppCompatActivity() {
                         val barcode = nextLine?.get(3)
                         val image = IMAGE_URL + nextLine?.get(1) + ".jpg"
 
-                        dbHelper = DbHelper(applicationContext)
-                        dbHelper?.insertProductDetail(product_id!!,item_id!!,item_name!!,barcode!!,image)
+                        val productEntity = ProductEntity(product_id!!,item_id!!,item_name!!,barcode!!,image)
+                        syncDataFromServerViewModel?.addProduct(productEntity)
+
+                        //dbHelper = DbHelper(applicationContext)
+                        //dbHelper?.insertProductDetail(product_id!!,item_id!!,item_name!!,barcode!!,image)
 
                     }
-                    dbHelper!!.close()
+                    //dbHelper!!.close()
 
 
                 } catch (er: Exception) {
-                    Log.e(TAG, er.message)
+                    Log.e(TAG, er.message.toString())
                     STATUS = er.message
                 }
 
             }
             catch (er:Exception){
-                Log.e(TAG,er.message)
+                Log.e(TAG,er.message.toString())
                 STATUS = er.message
             }
 

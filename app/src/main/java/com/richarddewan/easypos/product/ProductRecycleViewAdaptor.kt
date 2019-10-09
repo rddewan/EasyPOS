@@ -13,12 +13,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.mikepenz.iconics.Iconics.applicationContext
 import com.richarddewan.easypos.R
+import com.richarddewan.easypos.model.entity.ProductEntity
 import com.richarddewan.easypos.product.interfaces.ProductClickListener
 import com.richarddewan.easypos.utils.AnimationUtils
-import com.squareup.picasso.Picasso
 
 
-class ProductRecycleViewAdaptor(private var mDataList:ArrayList<ProductProperty>) : RecyclerView.Adapter<ProductRecycleViewAdaptor.ViewHolder>() {
+
+class ProductRecycleViewAdaptor(private var mDataList: List<ProductEntity>) : RecyclerView.Adapter<ProductRecycleViewAdaptor.ViewHolder>() {
     private var productClickListener:ProductClickListener? = null
     var view:View? = null
     private var mPreviousPosition = 0
@@ -79,7 +80,7 @@ class ProductRecycleViewAdaptor(private var mDataList:ArrayList<ProductProperty>
         this.productClickListener = productClickListener
     }
 
-    fun setFilter(list:ArrayList<ProductProperty>){
+    fun setFilter(list:List<ProductEntity>){
         this.mDataList = list
         notifyDataSetChanged()
     }

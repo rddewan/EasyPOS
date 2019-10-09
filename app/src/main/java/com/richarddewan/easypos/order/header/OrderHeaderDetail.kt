@@ -20,7 +20,6 @@ import com.afollestad.materialdialogs.customview.getCustomView
 import com.example.tscdll.TscWifiActivity
 import com.richarddewan.easypos.R
 import com.richarddewan.easypos.config.OrderStatus
-import com.richarddewan.easypos.database.DbHelper
 import com.richarddewan.easypos.order.header.interfaces.OrderHeaderClickListener
 import com.richarddewan.easypos.order.line.OrderLineRecycleViewAdaptor
 import com.richarddewan.easypos.order.line.OrderLineProperty
@@ -33,7 +32,6 @@ class OrderHeaderDetail : AppCompatActivity(), OrderHeaderClickListener , OrderL
 
     val TAG = "OrderHeaderDetail"
     private var toolbar: Toolbar? = null
-    private var dbHelper:DbHelper? = null
     private var recycleViewOrderHeader:RecyclerView? = null
     private var mAdaptorOrderHeader:OrderHeaderRecycleViewHeader? = null
     private var mListOrderHeader = ArrayList<OrderHeaderProperty>()
@@ -76,9 +74,9 @@ class OrderHeaderDetail : AppCompatActivity(), OrderHeaderClickListener , OrderL
 
     fun getOrderHeader(){
         //mListOrderHeader.clear()
-        dbHelper = DbHelper(applicationContext)
+        /*dbHelper = DbHelper(applicationContext)
         mListOrderHeader = dbHelper!!.getOrderHeader()
-        dbHelper!!.close()
+        dbHelper!!.close()*/
     }
 
     fun recycleViewHeader(){
@@ -98,9 +96,9 @@ class OrderHeaderDetail : AppCompatActivity(), OrderHeaderClickListener , OrderL
     }
 
     fun getOrderLine(orderId:String){
-        dbHelper = DbHelper(applicationContext)
+        /*dbHelper = DbHelper(applicationContext)
         mListOrderLine = dbHelper!!.getOrderLine(orderId)
-        dbHelper!!.close()
+        dbHelper!!.close()*/
 
         //set recycle view
         recycleViewLine()
@@ -135,9 +133,9 @@ class OrderHeaderDetail : AppCompatActivity(), OrderHeaderClickListener , OrderL
 
     fun deleteOrderLine(position: Int) {
         val data = mListOrderLine.get(position)
-        dbHelper = DbHelper(applicationContext)
+        /*dbHelper = DbHelper(applicationContext)
         dbHelper?.deleteOrderLine(data.order_id!!, data.line_number!!)
-        dbHelper?.close()
+        dbHelper?.close()*/
 
         //get order detail
         val orderId = mListOrderHeader.get(position).orderId
@@ -146,9 +144,9 @@ class OrderHeaderDetail : AppCompatActivity(), OrderHeaderClickListener , OrderL
 
     fun updateOrderToDb(position: Int, qty: String) {
         val data = mListOrderLine[position]
-        dbHelper = DbHelper(applicationContext)
+        /*dbHelper = DbHelper(applicationContext)
         dbHelper?.updateOrderDetail(data.order_id!!, data.product_id!!, data.line_number!!, qty)
-        dbHelper?.close()
+        dbHelper?.close()*/
 
         //get order detail
         getOrderLine(data.order_id!!)

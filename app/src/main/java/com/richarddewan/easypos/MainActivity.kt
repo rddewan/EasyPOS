@@ -27,7 +27,6 @@ import com.mikepenz.materialdrawer.model.ProfileDrawerItem
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IProfile
-import com.richarddewan.easypos.database.DbHelper
 import com.richarddewan.easypos.download.SyncDataFromServer
 import com.richarddewan.easypos.order.CartRecycleViewAdaptor
 import com.richarddewan.easypos.order.OrderProperty
@@ -56,11 +55,15 @@ import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.listener.*
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import java.io.File
 import com.example.tscdll.TscWifiActivity
+import com.richarddewan.easypos.model.entity.ProductEntity
+import com.richarddewan.easypos.viewmodel.MainActivityViewModel
 
 
 class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickListener {
@@ -71,7 +74,7 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     private var mAdaptor: ProductRecycleViewAdaptor? = null
     private var mAdaptorCart: CartRecycleViewAdaptor? = null
     //private var mLayoutManager:RecyclerView.LayoutManager? = null
-    private var mList: ArrayList<ProductProperty> = ArrayList()
+    private var mList: ArrayList<ProductEntity> = ArrayList()
     private var mListCart: ArrayList<OrderProperty> = ArrayList()
     private var mLayoutManager: StaggeredGridLayoutManager? = null
     private var mLayoutManagerCart: RecyclerView.LayoutManager? = null
@@ -80,7 +83,6 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     private var cartImageView: ImageView? = null
     private var searchView: SearchView? = null
     //
-    private var dbHelper: DbHelper? = null;
     private var toolbar: Toolbar? = null
     private var ORDER_ID: String? = null
     private var ORDER_FORMAT: String? = null
@@ -97,6 +99,7 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     private var dialog: MaterialDialog? = null
     private var print_server_ip:String? = null
     private val TscEthernetDll: TscWifiActivity = TscWifiActivity()
+    private var mainActivityViewModel: MainActivityViewModel? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -111,7 +114,9 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         //
         drawer(savedInstanceState)
         //
-        productRecycleView()
+        mainActivityViewModel = ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
+        //
+        getProductList()
         //
         cartRecycleView()
         // sec delay
@@ -162,27 +167,23 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         }
     }
 
-    fun productRecycleView() {
-        //disable it after 1st run
-        /*for (i in 1..100){
-            val data = ProductProperty("test$i","test$i","test_name$i","01234566$i","http://$i.jpg")
-            dbHelper = DbHelper(applicationContext)
-            dbHelper!!.insertProductDetail(data.product_id!!,data.item_id!!,data.item_name!!,data.barcode!!,data.image!!)
-            dbHelper!!.close()
+    fun getProductList() {
+        mainActivityViewModel?.getAllProduct()?.observe(this, object :Observer<List<ProductEntity>>{
+            override fun onChanged(t: List<ProductEntity>?) {
+                mList = t as ArrayList<ProductEntity>
+                //recycle view
+                productRecycleView();
 
-        }
-         */
-        //get the list of product from database
-        dbHelper = DbHelper(applicationContext)
-        mList = dbHelper!!.getProductDetail()
-        dbHelper!!.close()
+            }
+        })
+    }
 
-        //recycle view
+    fun productRecycleView(){
         mRecyclerView = findViewById(R.id.product_recycle_view)
         mLayoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         mRecyclerView?.layoutManager = mLayoutManager
         //set data to adaptor
-        mAdaptor = ProductRecycleViewAdaptor(mList)
+        mAdaptor = ProductRecycleViewAdaptor(mList!!)
         //set recycle view adaptor
         mRecyclerView?.adapter = mAdaptor
         //set recycle view item click listener
@@ -191,9 +192,9 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
 
     fun cartRecycleView() {
         try {
-            dbHelper = DbHelper(applicationContext)
+            /*dbHelper = DbHelper(applicationContext)
             mListCart = dbHelper?.getCartDetail(ORDER_ID!!)!!
-            dbHelper?.close()
+            dbHelper?.close()*/
         } catch (er: Exception) {
             Log.e(TAG, er.message.toString())
         }
@@ -305,7 +306,7 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     }
 
     fun showAddQtyDialog(position: Int) {
-        val data = mList.get(position)
+        val data = mList!!.get(position)
         //dialog
         val dialog = MaterialDialog(this)
             .customView(R.layout.custom_dialog_qty, scrollable = true)
@@ -328,9 +329,9 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     }
 
     fun addOrderToDb(position: Int, qty: String) {
-        val data = mList.get(position)
+        val data = mList!!.get(position)
         LINE_NUMBER += 1
-        dbHelper = DbHelper(applicationContext)
+        /*dbHelper = DbHelper(applicationContext)
         dbHelper?.insertOrderDetail(
             LINE_NUMBER,
             ORDER_ID!!,
@@ -345,27 +346,27 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         CART_COUNT = dbHelper?.getCartCount(ORDER_ID!!)
         cartCount?.setText(CART_COUNT)
 
-        dbHelper?.close()
+        dbHelper?.close()*/
         //
         getOrderDetail()
     }
 
     fun updateOrderToDb(position: Int, qty: String) {
         val data = mListCart[position]
-        dbHelper = DbHelper(applicationContext)
+        /*dbHelper = DbHelper(applicationContext)
         dbHelper?.updateOrderDetail(data.order_id!!, data.product_id!!, data.line_number!!, qty)
-        dbHelper?.close()
+        dbHelper?.close()*/
         //get order detail
         getOrderDetail()
 
     }
 
     fun updateOrderStatus() {
-        dbHelper = DbHelper(applicationContext)
+        /*dbHelper = DbHelper(applicationContext)
         val status = dbHelper?.updateOrderStatus(ORDER_ID!!, ORDER_STATUS_CLOSED)
-        dbHelper?.close()
+        dbHelper?.close()*/
 
-        if (status!!) {
+        /*if (status!!) {
             updateSharedPreferencesRunningNumber()
             //get shared pref
             getSharedPref()
@@ -375,7 +376,7 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
             LINE_NUMBER = 0
         } else {
             errorDialog()
-        }
+        }*/
     }
 
     fun updateSharedPreferencesRunningNumber() {
@@ -386,20 +387,20 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
 
     fun deleteOrderLine(position: Int) {
         val data = mListCart.get(position)
-        dbHelper = DbHelper(applicationContext)
+        /*dbHelper = DbHelper(applicationContext)
         dbHelper?.deleteOrderLine(data.order_id!!, data.line_number!!)
-        dbHelper?.close()
+        dbHelper?.close()*/
         //get order detail
         getOrderDetail()
     }
 
     fun getOrderDetail() {
 
-        dbHelper = DbHelper(applicationContext)
+        /*dbHelper = DbHelper(applicationContext)
         mListCart = dbHelper?.getCartDetail(ORDER_ID!!)!!
         CART_COUNT = dbHelper?.getCartCount(ORDER_ID!!)
         cartCount?.setText(CART_COUNT)
-        dbHelper?.close()
+        dbHelper?.close()*/
 
         //set data to adaptor
         mAdaptorCart = CartRecycleViewAdaptor(mListCart)
@@ -412,16 +413,16 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
 
     fun getItemFromDb() {
         //get the list of product from database
-        dbHelper = DbHelper(applicationContext)
+        /*dbHelper = DbHelper(applicationContext)
         mList = dbHelper!!.getProductDetail()
-        dbHelper!!.close()
+        dbHelper!!.close()*/
 
         //recycle view
         mRecyclerView = findViewById(R.id.product_recycle_view)
         mLayoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         mRecyclerView?.layoutManager = mLayoutManager
         //set data to adaptor
-        mAdaptor = ProductRecycleViewAdaptor(mList)
+        mAdaptor = ProductRecycleViewAdaptor(mList!!)
         //set recycle view adaptor
         mRecyclerView?.adapter = mAdaptor
         //set recycle view item click listener
@@ -430,10 +431,10 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
 
     fun getCartCountFromDb() {
         try {
-            dbHelper = DbHelper(applicationContext)
+            /*dbHelper = DbHelper(applicationContext)
             CART_COUNT = dbHelper?.getCartCount(ORDER_ID!!)
             cartCount?.setText(CART_COUNT)
-            dbHelper?.close()
+            dbHelper?.close()*/
         } catch (er: Exception) {
             Log.e(TAG, er.message.toString())
         }
@@ -615,7 +616,7 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
 
     override fun onDeleteClick(view: View, position: Int) {
         Log.e(TAG, "Delete: $position")
-        Log.e(TAG, "Size: ${mList.size}")
+        Log.e(TAG, "Size: ${mList!!.size}")
         MaterialDialog(this).show {
             icon(R.drawable.stop)
             title(R.string.delete_dialog_title)
@@ -767,13 +768,13 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         searchView?.queryHint = "search..."
         searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(p0: String?): Boolean {
-                val filteredList = searchProduct(mList, p0!!)
+                val filteredList = searchProduct(mList!!, p0!!)
                 mAdaptor?.setFilter(filteredList)
                 return true
             }
 
             override fun onQueryTextChange(p0: String?): Boolean {
-                val filteredList = searchProduct(mList, p0!!)
+                val filteredList = searchProduct(mList!!, p0!!)
                 mAdaptor?.setFilter(filteredList)
                 return true
             }
@@ -787,10 +788,10 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         return super.onCreateOptionsMenu(menu)
     }
 
-    fun searchProduct(lists: List<ProductProperty>, query: String): ArrayList<ProductProperty> {
-        val filteredList = ArrayList<ProductProperty>()
+    fun searchProduct(lists: List<ProductEntity>, query: String): ArrayList<ProductEntity> {
+        val filteredList = ArrayList<ProductEntity>()
 
-        for (list: ProductProperty in lists) {
+        for (list: ProductEntity in lists) {
             val text = list.item_name?.toLowerCase() + " " + list.item_id + " " + list.barcode
             if (text.contains(query.toLowerCase())) {
                 filteredList.add(list)
