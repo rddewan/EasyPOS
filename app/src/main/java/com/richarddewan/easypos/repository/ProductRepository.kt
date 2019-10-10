@@ -10,7 +10,6 @@ import java.util.concurrent.Executor
 
 class ProductRepository {
     private var productDao: ProductDao? = null
-    private var productEntity: List<ProductEntity>? = null
 
     constructor(application: Application){
         val appDatabase = AppDatabase.getInstance(application)

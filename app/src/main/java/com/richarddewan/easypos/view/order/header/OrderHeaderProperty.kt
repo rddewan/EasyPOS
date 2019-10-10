@@ -1,4 +1,4 @@
-package com.richarddewan.easypos.order.header
+package com.richarddewan.easypos.view.order.header
 
 class OrderHeaderProperty {
 

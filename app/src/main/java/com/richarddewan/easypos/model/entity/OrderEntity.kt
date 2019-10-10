@@ -49,4 +49,5 @@ class OrderEntity {
         this.product_image = product_image
         this.order_status = order_status
     }
+
 }

@@ -1,4 +1,4 @@
-package com.richarddewan.easypos.order
+package com.richarddewan.easypos.view.order
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,9 +7,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.richarddewan.easypos.R
-import com.richarddewan.easypos.order.interfaces.CartItemClickListener
+import com.richarddewan.easypos.model.entity.OrderEntity
+import com.richarddewan.easypos.view.order.interfaces.CartItemClickListener
 
-class CartRecycleViewAdaptor(var mDataList: ArrayList<OrderProperty>) : RecyclerView.Adapter<CartRecycleViewAdaptor.ViewHolder>() {
+class CartRecycleViewAdaptor(var mDataList: ArrayList<OrderEntity>) : RecyclerView.Adapter<CartRecycleViewAdaptor.ViewHolder>() {
     private var cartItemClickListener:CartItemClickListener? =null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

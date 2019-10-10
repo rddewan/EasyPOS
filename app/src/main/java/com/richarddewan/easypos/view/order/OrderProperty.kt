@@ -1,4 +1,4 @@
-package com.richarddewan.easypos.order
+package com.richarddewan.easypos.view.order
 
 class OrderProperty {
     var order_id:String? = null

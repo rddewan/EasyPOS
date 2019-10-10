@@ -1,4 +1,4 @@
-package com.richarddewan.easypos.setting
+package com.richarddewan.easypos.view.setting
 
 
 import android.os.Bundle

@@ -22,13 +22,12 @@ abstract class AppDatabase : RoomDatabase(){
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        @Synchronized
         fun getInstance(context: Context) : AppDatabase{
             if (INSTANCE == null){
                 synchronized(this){
                     INSTANCE = Room.databaseBuilder(context.applicationContext,AppDatabase::class.java,"pos_db")
                         .fallbackToDestructiveMigration()
-                        //.addCallback(AppDatabaseCallBack())
+                        .addCallback(AppDatabaseCallBack())
                         .build()
                 }
             }

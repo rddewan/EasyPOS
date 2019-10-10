@@ -1,6 +1,5 @@
-package com.richarddewan.easypos.product
+package com.richarddewan.easypos.view.download.product
 
-import android.content.SharedPreferences
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
@@ -8,14 +7,13 @@ import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.mikepenz.iconics.Iconics.applicationContext
 import com.richarddewan.easypos.R
 import com.richarddewan.easypos.model.entity.ProductEntity
-import com.richarddewan.easypos.product.interfaces.ProductClickListener
-import com.richarddewan.easypos.utils.AnimationUtils
+import com.richarddewan.easypos.view.download.product.interfaces.ProductClickListener
+import com.richarddewan.easypos.view.utils.AnimationUtils
 
 
 

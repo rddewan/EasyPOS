@@ -1,4 +1,4 @@
-package com.richarddewan.easypos.order.line
+package com.richarddewan.easypos.view.order.line
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,7 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.richarddewan.easypos.R
-import com.richarddewan.easypos.order.line.interfaces.OrderLineClickListener
+import com.richarddewan.easypos.view.order.line.interfaces.OrderLineClickListener
 
 class OrderLineRecycleViewAdaptor(var mDataList: ArrayList<OrderLineProperty>): RecyclerView.Adapter<OrderLineRecycleViewAdaptor.ViewHolder>(){
     var orderLineOnClickListener:OrderLineClickListener? = null

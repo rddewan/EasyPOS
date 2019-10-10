@@ -1,4 +1,4 @@
-package com.richarddewan.easypos.config
+package com.richarddewan.easypos.view.config
 
 enum class OrderStatus {
     CLOSED,

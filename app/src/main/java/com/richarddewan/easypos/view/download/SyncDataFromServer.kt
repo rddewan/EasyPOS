@@ -1,17 +1,15 @@
-package com.richarddewan.easypos.download
+package com.richarddewan.easypos.view.download
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.database.sqlite.SQLiteDatabase
 import android.os.*
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Gravity
 import android.view.View
 import android.widget.ProgressBar
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import com.afollestad.materialdialogs.MaterialDialog
@@ -19,8 +17,7 @@ import com.opencsv.CSVReader
 import com.richarddewan.easypos.R
 
 import com.richarddewan.easypos.model.entity.ProductEntity
-import com.richarddewan.easypos.repository.ProductRepository
-import com.richarddewan.easypos.setting.SettingsActivity
+import com.richarddewan.easypos.view.setting.SettingsActivity
 import com.richarddewan.easypos.viewmodel.SyncDataFromServerViewModel
 import kotlinx.android.synthetic.main.activity_sync_data_from_server.*
 import java.io.*
@@ -174,7 +171,7 @@ class SyncDataFromServer : AppCompatActivity() {
                 if (STATUS_CODE == 200){
                     val lengthOfFile:Int = connection!!.contentLength
                     val inputStream:InputStream = BufferedInputStream(url.openStream(),8192)
-                    val outputStream:OutputStream = FileOutputStream(fileName)
+                    val outputStream: FileOutputStream = FileOutputStream(fileName)
 
                     val data = ByteArray(1024)
                     var total: Long = 0
@@ -256,12 +253,6 @@ class SyncDataFromServer : AppCompatActivity() {
 
                 try {
                     syncDataFromServerViewModel?.deleteProductTable()
-                    /*dbHelper = DbHelper(applicationContext)
-                    db = dbHelper?.getReadableDatabase()
-                    db?.execSQL("DROP TABLE IF EXISTS " + DbContract.ProductDetail.TABLE_NAME)
-                    Log.e(TAG, "Table Dropped ${DbContract.ProductDetail.TABLE_NAME}")
-                    db?.execSQL(DbCreateTable.PRODUCT_DETAIL_QUERY)
-                    Log.e(TAG, "Table Created ${DbContract.ProductDetail.TABLE_NAME}")*/
 
                 } catch (er: Exception) {
                     Log.e(TAG, er.message)
@@ -287,11 +278,7 @@ class SyncDataFromServer : AppCompatActivity() {
                         val productEntity = ProductEntity(product_id!!,item_id!!,item_name!!,barcode!!,image)
                         syncDataFromServerViewModel?.addProduct(productEntity)
 
-                        //dbHelper = DbHelper(applicationContext)
-                        //dbHelper?.insertProductDetail(product_id!!,item_id!!,item_name!!,barcode!!,image)
-
                     }
-                    //dbHelper!!.close()
 
 
                 } catch (er: Exception) {

@@ -1,4 +1,4 @@
-package com.richarddewan.easypos.product.interfaces
+package com.richarddewan.easypos.view.download.product.interfaces
 
 import android.view.View
 

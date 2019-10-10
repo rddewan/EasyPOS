@@ -1,4 +1,4 @@
-package com.richarddewan.easypos.product
+package com.richarddewan.easypos.view.download.product
 
 class ProductProperty {
 

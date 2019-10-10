@@ -1,4 +1,4 @@
-package com.richarddewan.easypos.order.header
+package com.richarddewan.easypos.view.order.header
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.richarddewan.easypos.R
-import com.richarddewan.easypos.order.header.interfaces.OrderHeaderClickListener
+import com.richarddewan.easypos.view.order.header.interfaces.OrderHeaderClickListener
 
 class OrderHeaderRecycleViewHeader(var mDataList: ArrayList<OrderHeaderProperty>,var mContext:Context) : RecyclerView.Adapter<OrderHeaderRecycleViewHeader.ViewHolder>() {
     private var orderHeaderClickListener:OrderHeaderClickListener? = null

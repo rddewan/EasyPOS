@@ -27,23 +27,20 @@ import com.mikepenz.materialdrawer.model.ProfileDrawerItem
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IProfile
-import com.richarddewan.easypos.download.SyncDataFromServer
-import com.richarddewan.easypos.order.CartRecycleViewAdaptor
-import com.richarddewan.easypos.order.OrderProperty
-import com.richarddewan.easypos.order.header.OrderHeaderDetail
-import com.richarddewan.easypos.order.interfaces.CartItemClickListener
-import com.richarddewan.easypos.product.ProductProperty
-import com.richarddewan.easypos.product.ProductRecycleViewAdaptor
-import com.richarddewan.easypos.product.interfaces.ProductClickListener
-import com.richarddewan.easypos.setting.SettingsActivity
+import com.richarddewan.easypos.view.download.SyncDataFromServer
+import com.richarddewan.easypos.view.order.CartRecycleViewAdaptor
+import com.richarddewan.easypos.view.order.OrderProperty
+import com.richarddewan.easypos.view.order.header.OrderHeaderDetail
+import com.richarddewan.easypos.view.order.interfaces.CartItemClickListener
+import com.richarddewan.easypos.view.download.product.ProductRecycleViewAdaptor
+import com.richarddewan.easypos.view.download.product.interfaces.ProductClickListener
+import com.richarddewan.easypos.view.setting.SettingsActivity
 import kotlinx.android.synthetic.main.custom_cart_view.view.*
 import kotlinx.android.synthetic.main.custom_dialog_qty.view.*
 import kotlinx.android.synthetic.main.custom_dialog_qty.view.lbItemName
 import com.karumi.dexter.PermissionToken
 import android.Manifest.permission
 import android.annotation.SuppressLint
-import android.app.Dialog
-import android.app.ProgressDialog
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.*
@@ -55,6 +52,7 @@ import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.karumi.dexter.MultiplePermissionsReport
@@ -62,6 +60,7 @@ import com.karumi.dexter.listener.*
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import java.io.File
 import com.example.tscdll.TscWifiActivity
+import com.richarddewan.easypos.model.entity.OrderEntity
 import com.richarddewan.easypos.model.entity.ProductEntity
 import com.richarddewan.easypos.viewmodel.MainActivityViewModel
 
@@ -74,8 +73,8 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     private var mAdaptor: ProductRecycleViewAdaptor? = null
     private var mAdaptorCart: CartRecycleViewAdaptor? = null
     //private var mLayoutManager:RecyclerView.LayoutManager? = null
-    private var mList: ArrayList<ProductEntity> = ArrayList()
-    private var mListCart: ArrayList<OrderProperty> = ArrayList()
+    private var mListProduct: ArrayList<ProductEntity> = ArrayList()
+    private var mListCart: ArrayList<OrderEntity> = ArrayList()
     private var mLayoutManager: StaggeredGridLayoutManager? = null
     private var mLayoutManagerCart: RecyclerView.LayoutManager? = null
     private var cartMenuItem: MenuItem? = null
@@ -119,12 +118,16 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         getProductList()
         //
         cartRecycleView()
+        //
+        getCartList()
+        //
+        getCartCountFromDb()
         // sec delay
-        Handler().postDelayed({
+        /*Handler().postDelayed({
             //
             getCartCountFromDb()
 
-        }, 1000)
+        }, 1000)*/
 
     }
 
@@ -170,9 +173,9 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     fun getProductList() {
         mainActivityViewModel?.getAllProduct()?.observe(this, object :Observer<List<ProductEntity>>{
             override fun onChanged(t: List<ProductEntity>?) {
-                mList = t as ArrayList<ProductEntity>
+                mListProduct = t as ArrayList<ProductEntity>
                 //recycle view
-                productRecycleView();
+                productRecycleView()
 
             }
         })
@@ -183,7 +186,7 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         mLayoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         mRecyclerView?.layoutManager = mLayoutManager
         //set data to adaptor
-        mAdaptor = ProductRecycleViewAdaptor(mList!!)
+        mAdaptor = ProductRecycleViewAdaptor(mListProduct)
         //set recycle view adaptor
         mRecyclerView?.adapter = mAdaptor
         //set recycle view item click listener
@@ -191,14 +194,6 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     }
 
     fun cartRecycleView() {
-        try {
-            /*dbHelper = DbHelper(applicationContext)
-            mListCart = dbHelper?.getCartDetail(ORDER_ID!!)!!
-            dbHelper?.close()*/
-        } catch (er: Exception) {
-            Log.e(TAG, er.message.toString())
-        }
-
         //recycle view
         mRecyclerViewCart = findViewById(R.id.cart_recycle_view)
         mLayoutManagerCart = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
@@ -306,7 +301,7 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     }
 
     fun showAddQtyDialog(position: Int) {
-        val data = mList!!.get(position)
+        val data = mListProduct!!.get(position)
         //dialog
         val dialog = MaterialDialog(this)
             .customView(R.layout.custom_dialog_qty, scrollable = true)
@@ -329,35 +324,54 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     }
 
     fun addOrderToDb(position: Int, qty: String) {
-        val data = mList!!.get(position)
+        val data = mListProduct.get(position)
         LINE_NUMBER += 1
-        /*dbHelper = DbHelper(applicationContext)
-        dbHelper?.insertOrderDetail(
-            LINE_NUMBER,
+        val orderEntity = OrderEntity(
             ORDER_ID!!,
+            LINE_NUMBER.toString(),
             data.product_id!!,
             data.item_id!!,
             data.item_name!!,
-            qty,
             data.barcode!!,
+            qty,
+            data.image!!,
             ORDER_STATUS_OPEN
-        )
-        //get cart count
-        CART_COUNT = dbHelper?.getCartCount(ORDER_ID!!)
-        cartCount?.setText(CART_COUNT)
 
-        dbHelper?.close()*/
-        //
-        getOrderDetail()
+        )
+        mainActivityViewModel?.addOrder(orderEntity)
+
+        //get order detail
+        getCartList()
+
+    }
+
+    fun getCartList(){
+        mainActivityViewModel?.getOrderDetailById(ORDER_ID!!)?.observe(this, object :Observer<List<OrderEntity>>{
+            override fun onChanged(t: List<OrderEntity>?) {
+                mListCart = t as ArrayList<OrderEntity>
+                //recycle view order detail
+                setOrderDetail()
+
+            }
+        })
     }
 
     fun updateOrderToDb(position: Int, qty: String) {
         val data = mListCart[position]
-        /*dbHelper = DbHelper(applicationContext)
-        dbHelper?.updateOrderDetail(data.order_id!!, data.product_id!!, data.line_number!!, qty)
-        dbHelper?.close()*/
+        val orderEntity = OrderEntity(
+            data.order_id!!,
+            data.line_number!!,
+            data.product_id!!,
+            data.item_id!!,
+            data.item_name!!,
+            data.barcode!!,
+            qty,
+            data.product_image!!,
+            data.order_status!!
+        )
+        mainActivityViewModel?.updateOrder(orderEntity)
         //get order detail
-        getOrderDetail()
+        getCartList()
 
     }
 
@@ -387,21 +401,12 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
 
     fun deleteOrderLine(position: Int) {
         val data = mListCart.get(position)
-        /*dbHelper = DbHelper(applicationContext)
-        dbHelper?.deleteOrderLine(data.order_id!!, data.line_number!!)
-        dbHelper?.close()*/
+        mainActivityViewModel?.deleteOrder(data)
         //get order detail
-        getOrderDetail()
+        getCartList()
     }
 
-    fun getOrderDetail() {
-
-        /*dbHelper = DbHelper(applicationContext)
-        mListCart = dbHelper?.getCartDetail(ORDER_ID!!)!!
-        CART_COUNT = dbHelper?.getCartCount(ORDER_ID!!)
-        cartCount?.setText(CART_COUNT)
-        dbHelper?.close()*/
-
+    fun setOrderDetail() {
         //set data to adaptor
         mAdaptorCart = CartRecycleViewAdaptor(mListCart)
         //set recycle view adaptor
@@ -409,12 +414,15 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         //set recycle view item click listener
         mAdaptorCart?.setCartItemClickListener(this)
 
+        //get cart count
+        getCartCountFromDb()
+
     }
 
     fun getItemFromDb() {
         //get the list of product from database
         /*dbHelper = DbHelper(applicationContext)
-        mList = dbHelper!!.getProductDetail()
+        mListProduct = dbHelper!!.getProductDetail()
         dbHelper!!.close()*/
 
         //recycle view
@@ -422,7 +430,7 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         mLayoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         mRecyclerView?.layoutManager = mLayoutManager
         //set data to adaptor
-        mAdaptor = ProductRecycleViewAdaptor(mList!!)
+        mAdaptor = ProductRecycleViewAdaptor(mListProduct)
         //set recycle view adaptor
         mRecyclerView?.adapter = mAdaptor
         //set recycle view item click listener
@@ -431,10 +439,14 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
 
     fun getCartCountFromDb() {
         try {
-            /*dbHelper = DbHelper(applicationContext)
-            CART_COUNT = dbHelper?.getCartCount(ORDER_ID!!)
-            cartCount?.setText(CART_COUNT)
-            dbHelper?.close()*/
+            //get cart count
+            mainActivityViewModel?.getCartCount(ORDER_ID!!)?.observe(this, object:Observer<Int>{
+                override fun onChanged(t: Int?) {
+                    CART_COUNT = t.toString()
+                    cartCount?.setText(CART_COUNT)
+                }
+            })
+
         } catch (er: Exception) {
             Log.e(TAG, er.message.toString())
         }
@@ -449,115 +461,6 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         customView.etxtQty.selectAll()
 
         return customView
-    }
-
-    fun print(view: View) {
-        if (mListCart.size > 0) {
-            MaterialDialog(this).show {
-                icon(R.drawable.ic_user)
-                title(R.string.print_dialog_title)
-                message(R.string.print_dialog_message)
-                cancelable(false)
-                cornerRadius(16f)
-                positiveButton(R.string.yes) {
-                    dismiss()
-                    //print to printer
-                    PrintNetwork().execute()
-                }
-                negativeButton(R.string.disagree) {
-                    dismiss()
-                }
-            }
-
-        } else {
-            val alertDialog = AlertDialog.Builder(this, R.style.AlertDialogStyle)
-            alertDialog.setMessage("There is no data to print. Please check your order detail")
-            alertDialog.setPositiveButton("OK") { dialogInterface, i ->
-                dialogInterface.dismiss()
-            }
-            alertDialog.show()
-        }
-
-    }
-
-
-    private inner class PrintNetwork : AsyncTask<Void, String, String>() {
-        var status = ""
-        override fun onPreExecute() {
-            super.onPreExecute()
-            showPrintDialog()
-        }
-
-        override fun doInBackground(vararg p0: Void?): String {
-            for (i in 0..mListCart.size - 1) {
-                try {
-                    val data = mListCart.get(i)
-                    val order_id = data.order_id
-                    val barcode = data.barcode
-                    val item_name = data.item_name
-                    val qty = data.qty
-                    val line_number = data.line_number
-
-                    TscEthernetDll.openport(print_server_ip, 9100, 0)
-                    TscEthernetDll.setup(80,40,10,10,0,0,0)
-                    //String status = TscEthernetDll.printerstatus(300);
-                    TscEthernetDll.clearbuffer();
-                    //TscEthernetDll.sendcommand("SIZE 90 mm, 40 mm\r\n");
-                    //TscEthernetDll.sendcommand("GAP 2 mm, 0 mm\r\n");//Gap media
-                    //TscEthernetDll.sendcommand("BLINE 2 mm, 0 mm\r\n");//blackmark media
-                    //TscEthernetDll.sendcommand("SPEED 4\r\n")
-                    //TscEthernetDll.sendcommand("DENSITY 12\r\n")
-                    //TscEthernetDll.sendcommand("CODEPAGE UTF-8\r\n")
-                    //TscEthernetDll.sendcommand("SET TEAR ON\r\n")
-                    //TscEthernetDll.sendcommand("SET COUNTER @1 1\r\n")
-                    //TscEthernetDll.sendcommand("@1 = \"0001\"\r\n")
-                    //TscEthernetDll.sendcommand("TEXT 100,300,\"ROMAN.TTF\",0,12,12,@1\r\n")
-                    //TscEthernetDll.sendcommand("TEXT 100,400,\"ROMAN.TTF\",0,12,12,\"TEST FONT\"\r\n")
-                    TscEthernetDll.printerfont(100, 100, "3", 0, 1, 1, "OrderId:$order_id  Line:$line_number")
-                    TscEthernetDll.printerfont(100, 130, "3", 0, 1, 1, "$item_name")
-                    TscEthernetDll.printerfont(100, 160, "3", 0, 1, 1, "Qty :  $qty")
-                    TscEthernetDll.barcode(100, 190, "128", 100, 1, 0, 3, 3, barcode)
-                    TscEthernetDll.printlabel(1, 1)
-                    TscEthernetDll.closeport(1000)//5sec
-
-                } catch (er: Exception) {
-                    Log.e(TAG, er.message.toString())
-                }
-                //set status to success
-                status = "SUCCESS"
-
-            }
-
-            return status
-        }
-
-        override fun onPostExecute(result: String?) {
-            //super.onPostExecute(result)
-            //update order status
-            if (result == "SUCCESS") {
-                showPrintDialog()
-                updateOrderStatus()
-
-            }
-
-        }
-    }
-
-    fun showPrintDialog() {
-        if (dialog == null) {
-            dialog = MaterialDialog(this)
-                .customView(R.layout.progress)
-            dialog!!.cancelable(false)
-            dialog!!.show()
-
-        } else {
-            if (dialog!!.isShowing) {
-                dialog!!.dismiss()
-                dialog = null
-            }
-
-        }
-
     }
 
     fun errorDialog() {
@@ -616,7 +519,7 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
 
     override fun onDeleteClick(view: View, position: Int) {
         Log.e(TAG, "Delete: $position")
-        Log.e(TAG, "Size: ${mList!!.size}")
+        Log.e(TAG, "Size: ${mListProduct!!.size}")
         MaterialDialog(this).show {
             icon(R.drawable.stop)
             title(R.string.delete_dialog_title)
@@ -768,13 +671,13 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         searchView?.queryHint = "search..."
         searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(p0: String?): Boolean {
-                val filteredList = searchProduct(mList!!, p0!!)
+                val filteredList = searchProduct(mListProduct, p0!!)
                 mAdaptor?.setFilter(filteredList)
                 return true
             }
 
             override fun onQueryTextChange(p0: String?): Boolean {
-                val filteredList = searchProduct(mList!!, p0!!)
+                val filteredList = searchProduct(mListProduct, p0!!)
                 mAdaptor?.setFilter(filteredList)
                 return true
             }
@@ -808,13 +711,124 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
 
         return super.onOptionsItemSelected(item)
     }
+    /*
+    print
+     */
+    fun print(view: View) {
+        if (mListCart.size > 0) {
+            MaterialDialog(this).show {
+                icon(R.drawable.ic_user)
+                title(R.string.print_dialog_title)
+                message(R.string.print_dialog_message)
+                cancelable(false)
+                cornerRadius(16f)
+                positiveButton(R.string.yes) {
+                    dismiss()
+                    //print to printer
+                    PrintNetwork().execute()
+                }
+                negativeButton(R.string.disagree) {
+                    dismiss()
+                }
+            }
+
+        } else {
+            val alertDialog = AlertDialog.Builder(this, R.style.AlertDialogStyle)
+            alertDialog.setMessage("There is no data to print. Please check your order detail")
+            alertDialog.setPositiveButton("OK") { dialogInterface, i ->
+                dialogInterface.dismiss()
+            }
+            alertDialog.show()
+        }
+
+    }
+
+    private inner class PrintNetwork : AsyncTask<Void, String, String>() {
+        var status = ""
+        override fun onPreExecute() {
+            super.onPreExecute()
+            showPrintDialog()
+        }
+
+        override fun doInBackground(vararg p0: Void?): String {
+            for (i in 0..mListCart.size - 1) {
+                try {
+                    val data = mListCart.get(i)
+                    val order_id = data.order_id
+                    val barcode = data.barcode
+                    val item_name = data.item_name
+                    val qty = data.qty
+                    val line_number = data.line_number
+
+                    TscEthernetDll.openport(print_server_ip, 9100, 0)
+                    TscEthernetDll.setup(80,40,10,10,0,0,0)
+                    //String status = TscEthernetDll.printerstatus(300);
+                    TscEthernetDll.clearbuffer();
+                    //TscEthernetDll.sendcommand("SIZE 90 mm, 40 mm\r\n");
+                    //TscEthernetDll.sendcommand("GAP 2 mm, 0 mm\r\n");//Gap media
+                    //TscEthernetDll.sendcommand("BLINE 2 mm, 0 mm\r\n");//blackmark media
+                    //TscEthernetDll.sendcommand("SPEED 4\r\n")
+                    //TscEthernetDll.sendcommand("DENSITY 12\r\n")
+                    //TscEthernetDll.sendcommand("CODEPAGE UTF-8\r\n")
+                    //TscEthernetDll.sendcommand("SET TEAR ON\r\n")
+                    //TscEthernetDll.sendcommand("SET COUNTER @1 1\r\n")
+                    //TscEthernetDll.sendcommand("@1 = \"0001\"\r\n")
+                    //TscEthernetDll.sendcommand("TEXT 100,300,\"ROMAN.TTF\",0,12,12,@1\r\n")
+                    //TscEthernetDll.sendcommand("TEXT 100,400,\"ROMAN.TTF\",0,12,12,\"TEST FONT\"\r\n")
+                    TscEthernetDll.printerfont(100, 100, "3", 0, 1, 1, "OrderId:$order_id  Line:$line_number")
+                    TscEthernetDll.printerfont(100, 130, "3", 0, 1, 1, "$item_name")
+                    TscEthernetDll.printerfont(100, 160, "3", 0, 1, 1, "Qty :  $qty")
+                    TscEthernetDll.barcode(100, 190, "128", 100, 1, 0, 3, 3, barcode)
+                    TscEthernetDll.printlabel(1, 1)
+                    TscEthernetDll.closeport(1000)//5sec
+
+                } catch (er: Exception) {
+                    Log.e(TAG, er.message.toString())
+                }
+                //set status to success
+                status = "SUCCESS"
+
+            }
+
+            return status
+        }
+
+        override fun onPostExecute(result: String?) {
+            //super.onPostExecute(result)
+            //update order status
+            if (result == "SUCCESS") {
+                showPrintDialog()
+                updateOrderStatus()
+
+            }
+
+        }
+    }
+
+    fun showPrintDialog() {
+        if (dialog == null) {
+            dialog = MaterialDialog(this)
+                .customView(R.layout.progress)
+            dialog!!.cancelable(false)
+            dialog!!.show()
+
+        } else {
+            if (dialog!!.isShowing) {
+                dialog!!.dismiss()
+                dialog = null
+            }
+
+        }
+
+    }
+    //end print
 
 
     override fun onRestart() {
         super.onRestart()
         getSharedPref()
         getItemFromDb()
-        getOrderDetail()
+        getCartList()
 
     }
 

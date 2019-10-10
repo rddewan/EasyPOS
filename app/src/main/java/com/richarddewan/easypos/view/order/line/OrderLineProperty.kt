@@ -1,4 +1,4 @@
-package com.richarddewan.easypos.order.line
+package com.richarddewan.easypos.view.order.line
 
 class OrderLineProperty {
     var order_id:String? = null

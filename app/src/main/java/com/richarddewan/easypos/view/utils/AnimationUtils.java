@@ -1,4 +1,4 @@
-package com.richarddewan.easypos.utils;
+package com.richarddewan.easypos.view.utils;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;

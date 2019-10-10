@@ -1,4 +1,4 @@
-package com.richarddewan.easypos.order.header
+package com.richarddewan.easypos.view.order.header
 
 import android.content.SharedPreferences
 import android.os.AsyncTask
@@ -19,11 +19,11 @@ import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
 import com.example.tscdll.TscWifiActivity
 import com.richarddewan.easypos.R
-import com.richarddewan.easypos.config.OrderStatus
-import com.richarddewan.easypos.order.header.interfaces.OrderHeaderClickListener
-import com.richarddewan.easypos.order.line.OrderLineRecycleViewAdaptor
-import com.richarddewan.easypos.order.line.OrderLineProperty
-import com.richarddewan.easypos.order.line.interfaces.OrderLineClickListener
+import com.richarddewan.easypos.view.config.OrderStatus
+import com.richarddewan.easypos.view.order.header.interfaces.OrderHeaderClickListener
+import com.richarddewan.easypos.view.order.line.OrderLineRecycleViewAdaptor
+import com.richarddewan.easypos.view.order.line.OrderLineProperty
+import com.richarddewan.easypos.view.order.line.interfaces.OrderLineClickListener
 import kotlinx.android.synthetic.main.activity_order_detail.*
 import kotlinx.android.synthetic.main.custom_cart_view.view.*
 import kotlinx.android.synthetic.main.custom_dialog_qty.view.*
