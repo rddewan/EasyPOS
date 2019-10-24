@@ -9,6 +9,7 @@ import com.richarddewan.easypos.model.entity.OrderEntity
 
 class OrderRepository {
      private var orderDao: OrderDao? = null
+    private var ORDER_STATUS: Int?  = 0
 
 
     constructor(application: Application){
@@ -41,6 +42,21 @@ class OrderRepository {
         return orderDao!!.getCartCount(order_id)
     }
 
+    fun updateOrderStatus(order_id: String,order_status: String) : Int {
+
+        return orderDao!!.updateOrderStatus(order_id,order_status)
+    }
+    /*
+    order detail
+     */
+    fun getOrderHeader() : LiveData<List<OrderEntity>>{
+        return orderDao!!.getOrderHeader()
+    }
+
+    fun getOrderLine(order_id: String) : LiveData<List<OrderEntity>> {
+        return orderDao!!.getCartDetail(order_id)
+    }
+
 
     private inner class InsertOrderTask(private var orderDao: OrderDao) : AsyncTask<OrderEntity,Void,Void>(){
 
@@ -66,4 +82,5 @@ class OrderRepository {
         }
 
     }
+
 }

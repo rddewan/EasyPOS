@@ -19,8 +19,12 @@
         android:theme="@style/AppTheme"
         tools:targetApi="q">
 
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713" />
+
         <activity android:name="com.richarddewan.easypos.view.download.SyncDataFromServer"/>
-        <activity android:name="com.richarddewan.easypos.view.order.header.OrderHeaderDetail" />
+        <activity android:name="com.richarddewan.easypos.view.order.OrderDetail" />
         <activity
             android:name="com.richarddewan.easypos.view.setting.SettingsActivity"
             android:label="@string/title_activity_settings" />

@@ -39,6 +39,10 @@ class MainActivityViewModel : AndroidViewModel {
         orderRepository!!.updateOrder(orderEntity)
     }
 
+    fun updateOrderStatus(order_id: String,order_status: String) : Int{
+        return orderRepository!!.updateOrderStatus(order_id,order_status)
+    }
+
     fun deleteOrder(orderEntity: OrderEntity){
         orderRepository!!.deleteOrder(orderEntity)
     }

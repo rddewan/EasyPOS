@@ -7,9 +7,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.richarddewan.easypos.R
+import com.richarddewan.easypos.model.entity.OrderEntity
 import com.richarddewan.easypos.view.order.header.interfaces.OrderHeaderClickListener
 
-class OrderHeaderRecycleViewHeader(var mDataList: ArrayList<OrderHeaderProperty>,var mContext:Context) : RecyclerView.Adapter<OrderHeaderRecycleViewHeader.ViewHolder>() {
+class OrderHeaderRecycleViewHeader(var mDataList: ArrayList<OrderEntity>,var mContext:Context) : RecyclerView.Adapter<OrderHeaderRecycleViewHeader.ViewHolder>() {
     private var orderHeaderClickListener:OrderHeaderClickListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -22,7 +23,7 @@ class OrderHeaderRecycleViewHeader(var mDataList: ArrayList<OrderHeaderProperty>
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.orderId?.text = mDataList.get(position).orderId
+        holder.orderId?.text = mDataList.get(position).order_id
         holder.order_status?.text = mDataList.get(position).order_status
         if (mDataList.get(position).order_status.equals("CLOSED")){
             holder.order_status?.setTextColor(mContext.resources.getColor(R.color.smashed_pumpkin))
@@ -38,7 +39,7 @@ class OrderHeaderRecycleViewHeader(var mDataList: ArrayList<OrderHeaderProperty>
         this.orderHeaderClickListener = orOrderHeaderClickListener
     }
 
-    fun setFilter(list:ArrayList<OrderHeaderProperty>){
+    fun setFilter(list:ArrayList<OrderEntity>){
         this.mDataList = list
         notifyDataSetChanged()
     }

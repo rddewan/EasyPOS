@@ -1,6 +1,7 @@
-package com.richarddewan.easypos.view.order.header
+package com.richarddewan.easypos.view.order
 
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -10,6 +11,8 @@ import android.view.View
 import android.widget.SearchView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,35 +21,40 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
 import com.example.tscdll.TscWifiActivity
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
 import com.richarddewan.easypos.R
+import com.richarddewan.easypos.model.entity.OrderEntity
 import com.richarddewan.easypos.view.config.OrderStatus
+import com.richarddewan.easypos.view.order.header.OrderHeaderRecycleViewHeader
 import com.richarddewan.easypos.view.order.header.interfaces.OrderHeaderClickListener
 import com.richarddewan.easypos.view.order.line.OrderLineRecycleViewAdaptor
-import com.richarddewan.easypos.view.order.line.OrderLineProperty
 import com.richarddewan.easypos.view.order.line.interfaces.OrderLineClickListener
+import com.richarddewan.easypos.viewmodel.OrderDetailViewModel
 import kotlinx.android.synthetic.main.activity_order_detail.*
 import kotlinx.android.synthetic.main.custom_cart_view.view.*
 import kotlinx.android.synthetic.main.custom_dialog_qty.view.*
 
-class OrderHeaderDetail : AppCompatActivity(), OrderHeaderClickListener , OrderLineClickListener{
+class OrderDetail : AppCompatActivity(), OrderHeaderClickListener , OrderLineClickListener{
 
-    val TAG = "OrderHeaderDetail"
+    val TAG = "OrderDetail"
     private var toolbar: Toolbar? = null
     private var recycleViewOrderHeader:RecyclerView? = null
-    private var mAdaptorOrderHeader:OrderHeaderRecycleViewHeader? = null
-    private var mListOrderHeader = ArrayList<OrderHeaderProperty>()
+    private var mAdaptorOrderHeader: OrderHeaderRecycleViewHeader? = null
+    private var mListOrderHeader: ArrayList<OrderEntity> = ArrayList()
     private var mLayoutManagerOrderHeader: StaggeredGridLayoutManager? = null
     // line
     private var recyclerViewLine:RecyclerView? = null
     private var mAdaptorLine:OrderLineRecycleViewAdaptor? = null
     private var mLayoutManagerLine:RecyclerView.LayoutManager? = null
-    private var mListOrderLine = ArrayList<OrderLineProperty>()
+    private var mListOrderLine : ArrayList<OrderEntity> = ArrayList()
 
     private var searchView:SearchView? = null
     private var sharedPreferences: SharedPreferences? = null
     private var dialog: MaterialDialog? = null
     private var print_server_ip:String? = null
     private val TscEthernetDll: TscWifiActivity = TscWifiActivity()
+    private var orderDetailViewModel: OrderDetailViewModel? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,16 +63,25 @@ class OrderHeaderDetail : AppCompatActivity(), OrderHeaderClickListener , OrderL
         toolbar = findViewById(R.id.menu_bar) as Toolbar
         toolbar?.title = ""
         setSupportActionBar(toolbar)
+
+        //
+        orderDetailViewModel = ViewModelProviders.of(this).get(OrderDetailViewModel::class.java)
         //
         getSharedPref()
-        //
+        //get order header
         getOrderHeader()
-        //
-        recycleViewHeader()
+        //live view
+        recycleViewLine()
         //
         btn_menu_back.setOnClickListener{
             this.finish()
         }
+        //load ads
+        //MobileAds.initialize(this) {}
+        val mAdView = findViewById(R.id.adView) as AdView
+        val adRequest = AdRequest.Builder().build()
+        mAdView.loadAd(adRequest)
+
     }
 
     fun getSharedPref() {
@@ -73,35 +90,42 @@ class OrderHeaderDetail : AppCompatActivity(), OrderHeaderClickListener , OrderL
     }
 
     fun getOrderHeader(){
-        //mListOrderHeader.clear()
-        /*dbHelper = DbHelper(applicationContext)
-        mListOrderHeader = dbHelper!!.getOrderHeader()
-        dbHelper!!.close()*/
+        orderDetailViewModel?.getOrderHeader()?.observe(this, object : Observer<List<OrderEntity>> {
+            override fun onChanged(t: List<OrderEntity>?) {
+                mListOrderHeader = t as ArrayList<OrderEntity>
+                //set recycle view
+                recycleViewHeader()
+            }
+
+        })
     }
 
     fun recycleViewHeader(){
         //find recycle view
         recycleViewOrderHeader = findViewById(R.id.recycleView_order_header);
-        //set layout manager
-        mLayoutManagerOrderHeader = StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL)
+        val orientation = this.getResources().getConfiguration().orientation
+
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE){
+            //set layout manager
+            mLayoutManagerOrderHeader = StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL)
+        }
+        else {
+            //set layout manager
+            mLayoutManagerOrderHeader = StaggeredGridLayoutManager(1,StaggeredGridLayoutManager.VERTICAL)
+        }
         //set recycle view layout manager
         recycleViewOrderHeader?.layoutManager = mLayoutManagerOrderHeader
         //set adaptor
-        mAdaptorOrderHeader = OrderHeaderRecycleViewHeader(mListOrderHeader,this)
+        mAdaptorOrderHeader =
+            OrderHeaderRecycleViewHeader(
+                mListOrderHeader,
+                this
+            )
         //set recyle view adaptor
         recycleViewOrderHeader?.adapter = mAdaptorOrderHeader
         //set recycle view click listener
         mAdaptorOrderHeader?.setClickListener(this)
 
-    }
-
-    fun getOrderLine(orderId:String){
-        /*dbHelper = DbHelper(applicationContext)
-        mListOrderLine = dbHelper!!.getOrderLine(orderId)
-        dbHelper!!.close()*/
-
-        //set recycle view
-        recycleViewLine()
     }
 
     fun recycleViewLine(){
@@ -111,6 +135,26 @@ class OrderHeaderDetail : AppCompatActivity(), OrderHeaderClickListener , OrderL
         mLayoutManagerLine = LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false)
         //set recycle view layout manager
         recyclerViewLine?.layoutManager = mLayoutManagerLine
+        //set adaptor
+        mAdaptorLine = OrderLineRecycleViewAdaptor(mListOrderLine)
+        //recycle view data adaptor
+        recyclerViewLine?.adapter = mAdaptorLine
+        //click listener
+        mAdaptorLine?.setOnLineItemClickListener(this)
+
+    }
+
+    fun getOrderLine(orderId:String){
+        orderDetailViewModel?.getOrderLine(orderId)?.observe(this, object : Observer<List<OrderEntity>>{
+            override fun onChanged(t: List<OrderEntity>?) {
+                mListOrderLine = t as ArrayList<OrderEntity>
+                //set recycle view
+                setOrderDetail()
+            }
+        })
+    }
+
+    fun setOrderDetail() {
         //set adaptor
         mAdaptorLine = OrderLineRecycleViewAdaptor(mListOrderLine)
         //recycle view data adaptor
@@ -133,20 +177,27 @@ class OrderHeaderDetail : AppCompatActivity(), OrderHeaderClickListener , OrderL
 
     fun deleteOrderLine(position: Int) {
         val data = mListOrderLine.get(position)
-        /*dbHelper = DbHelper(applicationContext)
-        dbHelper?.deleteOrderLine(data.order_id!!, data.line_number!!)
-        dbHelper?.close()*/
+        orderDetailViewModel?.deleteOrderLine(data.order_id!!,data.product_id!!,data.line_number!!)
 
         //get order detail
-        val orderId = mListOrderHeader.get(position).orderId
+        val orderId = data.order_id
         getOrderLine(orderId!!)
     }
 
     fun updateOrderToDb(position: Int, qty: String) {
         val data = mListOrderLine[position]
-        /*dbHelper = DbHelper(applicationContext)
-        dbHelper?.updateOrderDetail(data.order_id!!, data.product_id!!, data.line_number!!, qty)
-        dbHelper?.close()*/
+        val orderEntity = OrderEntity(
+            data.order_id!!,
+            data.line_number!!,
+            data.product_id!!,
+            data.item_id!!,
+            data.item_name!!,
+            data.barcode!!,
+            qty,
+            data.product_image!!,
+            data.order_status!!
+        )
+        orderDetailViewModel?.updateOrder(orderEntity)
 
         //get order detail
         getOrderLine(data.order_id!!)
@@ -159,7 +210,7 @@ class OrderHeaderDetail : AppCompatActivity(), OrderHeaderClickListener , OrderL
         }
         else {
             Log.e(TAG,"short click")
-            val orderId  = mListOrderHeader.get(position).orderId
+            val orderId  = mListOrderHeader.get(position).order_id
             getOrderLine(orderId!!)
         }
     }
@@ -370,12 +421,12 @@ class OrderHeaderDetail : AppCompatActivity(), OrderHeaderClickListener , OrderL
         return super.onCreateOptionsMenu(menu)
     }
 
-    fun searchOrder(lists:List<OrderHeaderProperty>,query:String) : ArrayList<OrderHeaderProperty>{
-        val filteredList = ArrayList<OrderHeaderProperty>()
+    fun searchOrder(lists:List<OrderEntity>,query:String) : ArrayList<OrderEntity>{
+        val filteredList = ArrayList<OrderEntity>()
 
-        for (list:OrderHeaderProperty in lists){
-            val text  = list.orderId?.toLowerCase() + " " + list.order_status?.toLowerCase()
-            if (text?.contains(query.toLowerCase())){
+        for (list:OrderEntity in lists){
+            val text  = list.order_id?.toLowerCase() + " " + list.order_status?.toLowerCase()
+            if (text.contains(query.toLowerCase())){
                 filteredList.add(list)
             }
         }

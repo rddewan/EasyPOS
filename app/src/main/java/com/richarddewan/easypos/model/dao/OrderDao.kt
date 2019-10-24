@@ -25,14 +25,11 @@ interface OrderDao {
     @Query("UPDATE order_detail SET order_status = :order_status WHERE order_id = :order_id")
     fun updateOrderStatus(order_id: String, order_status: String): Int
 
-    @Query("SELECT * FROM order_detail WHERE order_id = :order_id")
+    @Query("SELECT * FROM order_detail WHERE order_id = :order_id ORDER BY line_number ASC")
     fun getCartDetail(order_id: String) : LiveData<List<OrderEntity>>
 
-    @Query("SELECT * FROM order_detail GROUP BY order_id ORDER BY order_id DESC")
-    fun getOrderHeader(): List<OrderEntity>
-
-    @Query("SELECT * FROM ORDER_DETAIL WHERE order_id = :orderId ORDER BY line_number ASC")
-    fun getOrderLine(orderId:String) :List<OrderEntity>
+    @Query("SELECT * FROM order_detail GROUP BY order_id ORDER BY id DESC")
+    fun getOrderHeader(): LiveData<List<OrderEntity>>
 
     @Query("SELECT COUNT(id) FROM order_detail WHERE order_id = :order_id")
     fun getCartCount(order_id: String) : LiveData<Int>

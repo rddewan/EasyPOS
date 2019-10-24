@@ -29,8 +29,7 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IProfile
 import com.richarddewan.easypos.view.download.SyncDataFromServer
 import com.richarddewan.easypos.view.order.CartRecycleViewAdaptor
-import com.richarddewan.easypos.view.order.OrderProperty
-import com.richarddewan.easypos.view.order.header.OrderHeaderDetail
+import com.richarddewan.easypos.view.order.OrderDetail
 import com.richarddewan.easypos.view.order.interfaces.CartItemClickListener
 import com.richarddewan.easypos.view.download.product.ProductRecycleViewAdaptor
 import com.richarddewan.easypos.view.download.product.interfaces.ProductClickListener
@@ -42,6 +41,7 @@ import com.karumi.dexter.PermissionToken
 import android.Manifest.permission
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.*
 import android.provider.Settings
@@ -52,7 +52,6 @@ import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.karumi.dexter.MultiplePermissionsReport
@@ -60,6 +59,9 @@ import com.karumi.dexter.listener.*
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import java.io.File
 import com.example.tscdll.TscWifiActivity
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 import com.richarddewan.easypos.model.entity.OrderEntity
 import com.richarddewan.easypos.model.entity.ProductEntity
 import com.richarddewan.easypos.viewmodel.MainActivityViewModel
@@ -70,7 +72,7 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     val TAG: String = "MainActivity"
     private var mRecyclerView: RecyclerView? = null
     private var mRecyclerViewCart: RecyclerView? = null
-    private var mAdaptor: ProductRecycleViewAdaptor? = null
+    private var mAdaptorProduct: ProductRecycleViewAdaptor? = null
     private var mAdaptorCart: CartRecycleViewAdaptor? = null
     //private var mLayoutManager:RecyclerView.LayoutManager? = null
     private var mListProduct: ArrayList<ProductEntity> = ArrayList()
@@ -128,6 +130,11 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
             getCartCountFromDb()
 
         }, 1000)*/
+        //load ads
+        MobileAds.initialize(this) {}
+        val mAdView = findViewById(R.id.adView) as AdView
+        val adRequest = AdRequest.Builder().build()
+        mAdView.loadAd(adRequest)
 
     }
 
@@ -160,7 +167,7 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
             cancelable(false)
             cornerRadius(16f)
             positiveButton(R.string.yes) {
-                //call delete function
+                //open setting activity
                 val intent = Intent(applicationContext, SettingsActivity::class.java)
                 startActivity(intent)
             }
@@ -176,21 +183,28 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
                 mListProduct = t as ArrayList<ProductEntity>
                 //recycle view
                 productRecycleView()
-
             }
         })
     }
 
     fun productRecycleView(){
+
         mRecyclerView = findViewById(R.id.product_recycle_view)
-        mLayoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        val orientation = this.getResources().getConfiguration().orientation
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE){
+            mLayoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        }
+        else {
+            mLayoutManager = StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL)
+        }
+
         mRecyclerView?.layoutManager = mLayoutManager
         //set data to adaptor
-        mAdaptor = ProductRecycleViewAdaptor(mListProduct)
+        mAdaptorProduct = ProductRecycleViewAdaptor(mListProduct)
         //set recycle view adaptor
-        mRecyclerView?.adapter = mAdaptor
+        mRecyclerView?.adapter = mAdaptorProduct
         //set recycle view item click listener
-        mAdaptor?.setProductClickListener(this)
+        mAdaptorProduct?.setProductClickListener(this)
     }
 
     fun cartRecycleView() {
@@ -278,7 +292,7 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
                     var intent: Intent? = null
                     when {
                         drawerItem.identifier == 2L -> {
-                            intent = Intent(applicationContext, OrderHeaderDetail::class.java)
+                            intent = Intent(applicationContext, OrderDetail::class.java)
                         }
                         drawerItem.identifier == 3L -> {
                             intent = Intent(applicationContext, SettingsActivity::class.java)
@@ -376,21 +390,20 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     }
 
     fun updateOrderStatus() {
-        /*dbHelper = DbHelper(applicationContext)
-        val status = dbHelper?.updateOrderStatus(ORDER_ID!!, ORDER_STATUS_CLOSED)
-        dbHelper?.close()*/
-
-        /*if (status!!) {
+        val status: Int = mainActivityViewModel?.updateOrderStatus(ORDER_ID!!, ORDER_STATUS_CLOSED)!!
+        if (status > 0) {
             updateSharedPreferencesRunningNumber()
             //get shared pref
             getSharedPref()
             //get order detail
-            getOrderDetail()
+            mListCart.clear()
+            getCartList()
             // reset line number
             LINE_NUMBER = 0
         } else {
             errorDialog()
-        }*/
+        }
+
     }
 
     fun updateSharedPreferencesRunningNumber() {
@@ -419,23 +432,18 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
 
     }
 
-    fun getItemFromDb() {
-        //get the list of product from database
-        /*dbHelper = DbHelper(applicationContext)
-        mListProduct = dbHelper!!.getProductDetail()
-        dbHelper!!.close()*/
-
+    /*fun getItemFromDb() {
         //recycle view
         mRecyclerView = findViewById(R.id.product_recycle_view)
         mLayoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         mRecyclerView?.layoutManager = mLayoutManager
         //set data to adaptor
-        mAdaptor = ProductRecycleViewAdaptor(mListProduct)
+        mAdaptorProduct = ProductRecycleViewAdaptor(mListProduct)
         //set recycle view adaptor
-        mRecyclerView?.adapter = mAdaptor
+        mRecyclerView?.adapter = mAdaptorProduct
         //set recycle view item click listener
-        mAdaptor?.setProductClickListener(this)
-    }
+        mAdaptorProduct?.setProductClickListener(this)
+    }*/
 
     fun getCartCountFromDb() {
         try {
@@ -672,13 +680,13 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
         searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(p0: String?): Boolean {
                 val filteredList = searchProduct(mListProduct, p0!!)
-                mAdaptor?.setFilter(filteredList)
+                mAdaptorProduct?.setFilter(filteredList)
                 return true
             }
 
             override fun onQueryTextChange(p0: String?): Boolean {
                 val filteredList = searchProduct(mListProduct, p0!!)
-                mAdaptor?.setFilter(filteredList)
+                mAdaptorProduct?.setFilter(filteredList)
                 return true
             }
 
@@ -716,21 +724,41 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
      */
     fun print(view: View) {
         if (mListCart.size > 0) {
-            MaterialDialog(this).show {
-                icon(R.drawable.ic_user)
-                title(R.string.print_dialog_title)
-                message(R.string.print_dialog_message)
-                cancelable(false)
-                cornerRadius(16f)
-                positiveButton(R.string.yes) {
-                    dismiss()
-                    //print to printer
-                    PrintNetwork().execute()
-                }
-                negativeButton(R.string.disagree) {
-                    dismiss()
+            if (print_server_ip != ""){
+                MaterialDialog(this).show {
+                    icon(R.drawable.ic_user)
+                    title(R.string.print_dialog_title)
+                    message(R.string.print_dialog_message)
+                    cancelable(false)
+                    cornerRadius(16f)
+                    positiveButton(R.string.yes) {
+                        dismiss()
+                        //print to printer
+                        updateOrderStatus()
+                        //PrintNetwork().execute()
+                    }
+                    negativeButton(R.string.disagree) {
+                        dismiss()
+                    }
                 }
             }
+            else {
+                MaterialDialog(this).show {
+                    title(R.string.error_dialog_title)
+                    message(R.string.error_no_print_server_ip)
+                    icon(R.drawable.ic_user)
+                    cancelable(false)
+                    cornerRadius(16f)
+                    positiveButton(R.string.agree) {
+                        dismiss()
+                        //open setting activity
+                        val intent = Intent(applicationContext, SettingsActivity::class.java)
+                        startActivity(intent)
+                    }
+
+                }
+            }
+
 
         } else {
             val alertDialog = AlertDialog.Builder(this, R.style.AlertDialogStyle)
@@ -823,12 +851,18 @@ class MainActivity : AppCompatActivity(), ProductClickListener, CartItemClickLis
     }
     //end print
 
+    override fun onResume() {
+        super.onResume()
+        getSharedPref()
+        //getItemFromDb()
+        getProductList()
+        getCartList()
+    }
+
 
     override fun onRestart() {
         super.onRestart()
-        getSharedPref()
-        getItemFromDb()
-        getCartList()
+
 
     }
 

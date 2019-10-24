@@ -7,9 +7,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.richarddewan.easypos.R
+import com.richarddewan.easypos.model.entity.OrderEntity
 import com.richarddewan.easypos.view.order.line.interfaces.OrderLineClickListener
 
-class OrderLineRecycleViewAdaptor(var mDataList: ArrayList<OrderLineProperty>): RecyclerView.Adapter<OrderLineRecycleViewAdaptor.ViewHolder>(){
+class OrderLineRecycleViewAdaptor(var mDataList: ArrayList<OrderEntity>): RecyclerView.Adapter<OrderLineRecycleViewAdaptor.ViewHolder>(){
     var orderLineOnClickListener:OrderLineClickListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

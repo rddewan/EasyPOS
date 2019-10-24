@@ -67,7 +67,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.45" />
+        app:layout_constraintGuide_begin="600dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/cart_recycle_view"
